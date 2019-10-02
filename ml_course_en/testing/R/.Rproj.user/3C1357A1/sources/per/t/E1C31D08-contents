@@ -1,0 +1,20 @@
+library(tidyverse)
+library(leaps)
+
+df <- read_csv("SkillCraft1_Dataset.csv")
+names(df)
+
+df$TotalHours <- as.numeric(df$TotalHours)
+
+df <- na.omit(df)
+
+train <- sample(x=c(TRUE, FALSE), 
+                size=nrow(df), 
+                replace = T,
+                p=c(0.7,0.3))
+
+df.train <- df[train,]
+df.test <- df[!train,]
+
+select <- regsubsets(APM ~ ., df.train, nvmax=19 )
+summary(select)
