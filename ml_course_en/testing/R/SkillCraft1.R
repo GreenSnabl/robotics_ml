@@ -1,48 +1,42 @@
 library(tidyverse)
-library(nnet)
 library(MASS)
+library(boot)
+library(caret)
+library(car)
+library(leaps)
+library(mlbench)
+# install.packages("mlbench")
 
 df <- read_csv("SkillCraft1_Dataset.csv")
 names(df)
 attach(df)
 
-df$TotalHours <- as.numeric(TotalHours)
+cols <- c("TotalHours", "Age", "HoursPerWeek")
+df <- df %>% mutate_at(cols, as.numeric)
+head(df)
 
-df <- na.omit(df)
+df <- apply(df, 2, function (x) ifelse(is.na(x), median(x, na.rm=T), x))
+df <- data.frame(df)
 
-train <- sample(x=c(TRUE, FALSE), 
-                size=nrow(df), 
-                replace = T,
-                p=c(0.7,0.3))
+summary(is.na(df))
 
-fit <- lda(LeagueIndex ~ APM + ActionLatency + ActionsInPAC, 
-           data=df[train,])
-pred <- predict(fit, df[!train,])
+test <- sample(1:nrow(df), size = nrow(df)/5)
 
-mean(pred$class == df$LeagueIndex[!train])
+df.test <- df[test,]
+df.train <- df[-test,]
 
-tab <- table(pred$class,df$LeagueIndex[!train])
-tab
-round(prop.table(tab),2)
+pre <- preProcess(df.train, method = c("center", "scale"))
+df.train <- predict(pre, df.train)
+summary(df.train)
+var(df.train)
 
+x.train <- df.train %>% dplyr::select(-APM)
+y.train <- df.train$APM
 
-df2 <- data.frame(x = df$APM[!train],
-                  y = df$LeagueIndex[!train],
-                  color = pred$class)
-
-ggplot(data=df2, aes(x,y,color=color)) + 
-  geom_point()
-
-names(df)
-
-
-fit.lr <- lm(APM ~ SelectByHotkeys + ActionsInPAC + MinimapRightClicks, df[!train,])
-summary(fit.lr)
-
-
-par(mfrow=c(2,2))
-plot(fit.lr)
-
-
-
-cor(df)
+rs <- regsubsets(x.train, y.train)
+summary(rs)
+?train
+names(getModelInfo())
+control <- trainControl(method="repeatedcv", number = 10, repeats = 5)
+model <- train(APM ~ ., data=df.train, method="lm")
+summary(model)
