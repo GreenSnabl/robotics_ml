@@ -37,6 +37,10 @@ rs <- regsubsets(x.train, y.train)
 summary(rs)
 ?train
 names(getModelInfo())
-control <- trainControl(method="repeatedcv", number = 10, repeats = 5)
-model <- train(APM ~ ., data=df.train, method="lm")
+control <- trainControl(method="repeatedcv", number = 3, repeats = 5)
+model <- train(APM ~ ., data=df.train, method="lm", trControl=control)
 summary(model)
+
+
+importance <- varImp(model)
+print(importance)
