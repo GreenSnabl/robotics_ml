@@ -1,0 +1,15 @@
+Machine Learning only when programmable does not work.
+
+First business understanding -> then second is data understanding -> data preparation -> then maybe model/experiments
+
+training/test/validation or cross-val then metrics
+
+select right cost/loss functions binary_crossentropy (sigmoid) / categorical_crossentropy
+
+activation/loss/hyperparameters
+
+
+neural networks
+
+convolutional nns: go from low abstract features to high abstract feautres
+image prediction, uncompressing
